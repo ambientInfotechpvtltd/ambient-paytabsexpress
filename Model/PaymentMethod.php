@@ -126,14 +126,10 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
         $postcode = $billingAddress->getPostcode();
         $region = $billingAddress->getRegion();
         $country_iso2 = $billingAddress->getData('country_id');
-        //$countryObj = $this->_countryHelper->loadByCode($country);
-        //$country = $countryObj->getName();
         $telephone = $billingAddress->getTelephone();
         $title = $firstName . " " . $lastName;
-
         $cdetails = $this->getCountryDetails($country_iso2);
         $phoneext = $cdetails['phone'];
-
         $country = $this->countryGetiso3($country_iso2);
 
         $products = "";
@@ -165,22 +161,16 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
 					</div>
 				</form>";
 
-        /* $js = '<script  type="text/javascript" id="context" src="https://www.paytabs.com/express/express_checkout_v3.js"></script>'; */
-        $js = '<script>
-				jQuery(document).ready(function($){
-  					$(function(){$(\'head\').append(\'<script  type="text/javascript" id="context" src="https://www.paytabs.com/express/express_checkout_v3.js">\<\/script>\');});
+      $js = '<script>
+      				jQuery(document).ready(function($){
+        					$(function(){$(\'head\').append(\'<script  type="text/javascript" id="context" src="https://www.paytabs.com/express/express_checkout_v3.js">\<\/script>\');});
+      					$(function(){$(\'head\').append(\'<link rel="stylesheet" type="text/css" href="https://www.paytabs.com/theme/express_checkout/css/express.css">\');});
 
-					$(function(){$(\'head\').append(\'<link rel="stylesheet" type="text/css" href="https://www.paytabs.com/theme/express_checkout/css/express.css">\');});
-
-				});
-
-
-
-                </script>';
+      				});
+            </script>';
 
 
         $js .= "<script>";
-
         $js .= "
 			function launchPaytab() {
 
@@ -201,9 +191,9 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
 						language:'" . $locale . "',
 						redirect_on_reject: 1,
 						is_iframe: {
-                                                    load: \"onbodyload\", //onbodyload
-                                                    show: 1,
-                                                }
+                          load: \"onbodyload\", //onbodyload
+                          show: 1,
+                       }
 					},
 					customer_info:{
 						first_name: '" . $firstName . "',
@@ -221,8 +211,8 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
 					}
 				});
 
-                                jQuery('.PT_open_popup')[0].click();
-                                jQuery('.PT_open_popup').hide();
+              jQuery('.PT_open_popup')[0].click();
+              jQuery('.PT_open_popup').hide();
 
 			}
 	    ";
@@ -230,30 +220,39 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
 
         $js .= 'var checkoutOrderBtn = jQuery("button.btn-checkout");
                 if(checkoutOrderBtn.length == 0)
-		{
-			checkoutOrderBtn = jQuery("button:contains(\'Place Order\')");
-                        if(checkoutOrderBtn.length ==0){
-			  checkoutOrderBtn = jQuery(".payment-method").find(":button.checkout");
-			}
+              		{
+              			checkoutOrderBtn = jQuery("button:contains(\'Place Order\')");
+                                      if(checkoutOrderBtn.length ==0){
+              			  checkoutOrderBtn = jQuery(".payment-method").find(":button.checkout");
+              			}
 
-		}
+              		}
                 checkoutOrderBtn[0].removeAttribute("onclick");
                 checkoutOrderBtn[0].click(launchPaytab);
 				checkoutOrderBtn[0].removeAttribute("style");
         		checkoutOrderBtn[0].setAttribute("style", "display:none;");
 				jQuery(\'.loading-mask\').css(\'display\',\'none\');
                 ';
-
         $js .= "console.log('start timer');";
-
         $js .= "setTimeout(launchPaytab, 2500);";
-
         $js .= '</script>';
+        $css = '<style>';
+        $css .= '.content-area {
+            background: transparent;
+          }
+          .popup-wrap {
+            box-shadow: none;
+        }
+        .close_ {
+            display: none;
+        }
+        div#PT_overlay {
+            background-color: white;
+        }
+          ';
+        $css .= '</style>';
 
-        //$this->_logger->addError("Paytabs Generated HTML ".$html);
-        //$this->_logger->addError("Generated Paytabs checkout for order $txnid");
-
-        return $html . $js;
+        return $html . $js .$css;
     }
 
     public function getOrderPlaceRedirectUrl($storeId = null) {
@@ -263,8 +262,7 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
     protected function addHiddenField($arr) {
         $nm = $arr['name'];
         $vl = $arr['value'];
-        $input = "<input name='" . $nm . "' type='hidden' value='" . $vl . "' />";
-
+        $input = "<input name='" . $nm . "' type='hidden' value='" . $vl . "' class='paytab-express' />";
         return $input;
     }
 
@@ -275,7 +273,6 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
      *
      * @return string
      */
-    //AA may not be required
     public function getSuccessUrl($storeId = null) {
         return $this->_getUrl('checkout/onepage/success', $storeId);
     }
@@ -287,7 +284,6 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
      *
      * @return string
      */
-    //AA Done
     public function getReturnUrl($storeId = null) {
         return $this->_getUrl('ambient/ipn/callback', $storeId, false);
     }
@@ -302,7 +298,6 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
      *
      * @return string
      */
-    //AA Not required
     public function getCancelUrl($storeId = null) {
         return $this->_getUrl('checkout/onepage/failure', $storeId);
     }
@@ -316,7 +311,6 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
      *
      * @return string
      */
-    //AA Done
     protected function _getUrl($path, $storeId, $secure = null) {
         $store = $this->_storeManager->getStore($storeId);
 
