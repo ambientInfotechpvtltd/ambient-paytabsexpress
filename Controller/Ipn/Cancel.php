@@ -83,7 +83,6 @@ class Cancel extends AppAction implements CsrfAwareActionInterface
         try {
             // Cryptographically verify authenticity of callback
             if ($this->getRequest()->isPost()) {
-//                $this->_success();
                 $this->cancelAction();
             } else {
                 $this->_logger->addError("Paytabs: no post back data received in callback");
