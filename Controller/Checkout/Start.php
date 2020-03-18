@@ -37,8 +37,8 @@ class Start extends \Magento\Framework\App\Action\Action
     ) {
         $this->_paymentMethod = $paymentMethod;
         $this->_checkoutSession = $checkoutSession;
-		$this->_resultJsonFactory = $resultJsonFactory;
-		$this->_logger = $logger;
+  		$this->_resultJsonFactory = $resultJsonFactory;
+  		$this->_logger = $logger;
         parent::__construct($context);
     }
 
@@ -47,15 +47,9 @@ class Start extends \Magento\Framework\App\Action\Action
     */
     public function execute()
     {
-		//$this->_logger->debug('Entry Start Execute-');
 		$html = $this->_paymentMethod->getPostHTML($this->getOrder());
-		//$this->_logger->debug($html);
-		//echo json_encode($data);
 		$result = $this->_resultJsonFactory->create();
 		return $result->setData(['html' => $html]);
-
-        //return json_encode($data);
-		//AA Not Required $this->getResponse()->setRedirect($this->_paymentMethod->getCheckoutUrl($this->getOrder()));
     }
 
     /**
