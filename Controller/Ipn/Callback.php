@@ -165,52 +165,46 @@ class Callback extends AppAction implements CsrfAwareActionInterface
 
             if ($pdata['response_code'] == 100) {
                 if ($flag != "dataValid") {
-                    //$this->_order->hold()->save();
-                    $this->_createPaytabsComment("Paytabs Response signature does not match. You might have received tampered data", true);
+                    $this->_createAmbientComment("Paytabs Response signature does not match. You might have received tampered data", true);
                     $this->_order->cancel()->save();
 
                     $this->_logger->addError("Paytabs Response signature did not match ");
 
-                    //AA display error to customer = where ???
                     $this->messageManager->addError("<strong>Error:</strong> Paytabs Response signature does not match. You might have received tampered data");
                     $this->_redirect('checkout/onepage/failure');
 
                 } else {
                     $this->_registerPaymentCapture($txnrefno, $amount, $txMsg);
-                    //$this->_logger->addInfo("Paytabs Response Order success..".$txMsg);
 
                     $redirectUrl = $this->_paymentMethod->getSuccessUrl();
-                    //AA Where
                     $this->_redirect($redirectUrl);
                 }
             } else {
                 $historymessage = $txMsg;
 
-                $this->_createPaytabsComment($historymessage);
+                $this->_createAmbientComment($historymessage);
                 $this->_order->cancel()->save();
 
-                //$this->_logger->addInfo("Paytabs Response Order cancelled ..");
-
                 $this->messageManager->addError("<strong>Error:</strong> $txMsg <br/>");
-                //AA where
+
                 $redirectUrl = $this->_paymentMethod->getCancelUrl();
                 $this->_redirect($redirectUrl);
             }
         }
     }
 
-    //AA - To review - required
+
     protected function _registerPaymentCapture($transactionId, $amount, $message)
     {
         $payment = $this->_order->getPayment();
 
         $payment->setTransactionId($transactionId)
-            ->setPreparedMessage($this->_createPaytabsComment($message))
+            ->setPreparedMessage($this->_createAmbientComment($message))
             ->setShouldCloseParentTransaction(true)
             ->setIsTransactionClosed(0)
             ->setAdditionalInformation(['ambient', 'expresscheckout'])
             ->registerCaptureNotification(
-                //AA
+
                 $amount,
                 true
             );
@@ -231,7 +225,7 @@ class Callback extends AppAction implements CsrfAwareActionInterface
         }
     }
 
-    //AA Done
+
     protected function _loadOrder($order_id)
     {
         $this->_order = $this->_orderFactory->create()->loadByIncrementId($order_id);
@@ -241,14 +235,13 @@ class Callback extends AppAction implements CsrfAwareActionInterface
         }
     }
 
-    //AA Done
+
     protected function _success()
     {
         $this->getResponse()
             ->setStatusHeader(200);
     }
 
-    //AA Done
     protected function _failure()
     {
         $this->getResponse()
@@ -260,8 +253,7 @@ class Callback extends AppAction implements CsrfAwareActionInterface
      *
      * @return string|\Magento\Sales\Model\Order\Status\History
      */
-    //AA Done
-    protected function _createPaytabsComment($message = '')
+    protected function _createAmbientComment($message = '')
     {
         if ($message != '') {
             $message = $this->_order->addStatusHistoryComment($message);
