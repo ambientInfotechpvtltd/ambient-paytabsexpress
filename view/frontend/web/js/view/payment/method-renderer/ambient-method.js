@@ -1,5 +1,3 @@
-/*browser:true*/
-/*global define*/
 define(
     [
         'Magento_Checkout/js/view/payment/default',
@@ -17,10 +15,7 @@ define(
              * After place order callback
              */
             afterPlaceOrder: function () {
-                //window.location.replace(url.build('citrus/checkout/start'));
 				jQuery(function($) {
-				//alert(url.build('citrus/checkout/start'));
-				//$("#paytabsloader",parent.document).html('<b>OK</b>');
 				$.ajax({
         			url: url.build('ambient/checkout/start'),
 		        	type: 'get',
@@ -34,7 +29,6 @@ define(
 		        	success: function (data) {
                 jQuery('body').trigger('processStop');
                     	$("#paytabsexpressloader",parent.document).html(data['html']);
-						//alert(data['html']);
                 	},
 					error: function(xhr, ajaxOptions, thrownError) {
 						alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
