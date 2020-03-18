@@ -8,58 +8,65 @@
 
 namespace Ambient\Paytabs\Controller\Checkout;
 
-class Start extends \Magento\Framework\App\Action\Action
+class Success extends \Magento\Framework\App\Action\Action
 {
     /**
-    * @var \Magento\Checkout\Model\Session
-    */
+     * @var \Magento\Checkout\Model\Session
+     */
     protected $_checkoutSession;
 
     /**
-    * @var \Coinbase\Magento2PaymentGateway\Model\PaymentMethod
-    */
-    protected $_paymentMethod;
-
-	protected $_resultJsonFactory;
-
-	protected $_logger;
+     * @var \Magento\Framework\UrlInterface
+     */
+    protected $_urlBuilder;
 
     /**
-    * @param \Magento\Framework\App\Action\Context $context
-    * @param \Magento\Checkout\Model\Session $checkoutSession
-    * @param \Coinbase\Magento2PaymentGateway\Model\PaymentMethod $paymentMethod
-    */
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    protected $_storeManager;
+
+    /**
+     * @param \Magento\Framework\App\Action\Context $context
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Framework\UrlInterface $urlBuilder
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     */
     public function __construct(
-    \Magento\Framework\App\Action\Context $context,
-    \Magento\Checkout\Model\Session $checkoutSession,
-    \Ambient\Paytabs\Model\PaymentMethod $paymentMethod,
-	\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,\Psr\Log\LoggerInterface $logger
+      \Magento\Framework\App\Action\Context $context,
+      \Magento\Checkout\Model\Session $checkoutSession
     ) {
-        $this->_paymentMethod = $paymentMethod;
         $this->_checkoutSession = $checkoutSession;
-  		$this->_resultJsonFactory = $resultJsonFactory;
-  		$this->_logger = $logger;
+        $this->_urlBuilder = $context->getUrlInterface();
+        $this->_storeManager = $context->getStoreManagerInterface();
         parent::__construct($context);
     }
 
     /**
-    * Start checkout by requesting checkout code and dispatching customer to Coinbase.
+    * Unset the quote and redirect to checkout success.
     */
     public function execute()
     {
-		$html = $this->_paymentMethod->getPostHTML($this->getOrder());
-		$result = $this->_resultJsonFactory->create();
-		return $result->setData(['html' => $html]);
+        $this->getResponse()->setRedirect(
+            $this->_getUrl('checkout/onepage/success')
+        );
     }
 
     /**
-    * Get order object.
+    * Build URL for store.
     *
-    * @return \Magento\Sales\Model\Order
+    * @param string $path
+    * @param int $storeId
+    * @param bool|null $secure
+    *
+    * @return string
     */
-    protected function getOrder()
+    protected function _getUrl($path, $secure = null)
     {
-        return $this->_checkoutSession->getLastRealOrder();
+        $store = $this->_storeManager->getStore(null);
 
+        return $this->_urlBuilder->getUrl(
+            $path,
+            ['_store' => $store, '_secure' => $secure === null ? $store->isCurrentlySecure() : $secure]
+        );
     }
 }
